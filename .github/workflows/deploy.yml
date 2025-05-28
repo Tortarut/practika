@@ -1,0 +1,36 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: flask-app
+  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t $DOCKER_USER/$IMAGE_NAME:latest .
+
+      - name: Push image to DockerHub
+        run: docker push $DOCKER_USER/$IMAGE_NAME:latest
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > $HOME/.kube/config
+          kubectl apply -f k8s/
