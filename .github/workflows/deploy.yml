@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline (Build & Push)
 
 on:
   push:
@@ -11,7 +11,7 @@ env:
   DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,12 +26,3 @@ jobs:
 
       - name: Push image to DockerHub
         run: docker push $DOCKER_USER/$IMAGE_NAME:latest
-
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-
-      - name: Apply Kubernetes Manifests
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > $HOME/.kube/config
-          kubectl apply -f k8s/
