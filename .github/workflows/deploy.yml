@@ -32,5 +32,6 @@ jobs:
 
       - name: Apply Kubernetes Manifests
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBECONFIG_CONTENT }}" | base64 -d > $HOME/.kube/config
           kubectl apply -f k8s/
